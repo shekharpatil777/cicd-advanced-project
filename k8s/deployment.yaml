@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cicd-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cicd-app
+  template:
+    metadata:
+      labels:
+        app: cicd-app
+    spec:
+      containers:
+      - name: cicd-app
+        image: your-dockerhub-username/cicd-app:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: MY_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: password

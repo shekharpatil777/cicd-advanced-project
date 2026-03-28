@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cicd-app-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cicd-app
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: cicd-app
+        version: canary
+    spec:
+      containers:
+      - name: cicd-app
+        image: your-dockerhub-username/cicd-app:canary
+        ports:
+        - containerPort: 5000
