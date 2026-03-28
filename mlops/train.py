@@ -250,11 +250,17 @@ class MLPipeline:
             json.dump(metadata, f, indent=2)
         logger.info(f"Metadata saved: {metadata_path}")
         
-        # Create symlink to latest
-        latest_link = self.model_dir / "latest"
-        if latest_link.exists():
-            latest_link.unlink()
-        latest_link.symlink_to(version_dir)
+        # Create latest reference (Windows-compatible)
+        latest_info = {
+            'latest_version': str(version_dir),
+            'timestamp': timestamp,
+            'model_type': self.model.__class__.__name__
+        }
+        
+        latest_path = self.model_dir / "latest.json"
+        with open(latest_path, 'w') as f:
+            json.dump(latest_info, f, indent=2)
+        logger.info(f"Latest reference saved: {latest_path}")
         
         logger.info(f"✅ Model artifacts saved to: {version_dir}")
         

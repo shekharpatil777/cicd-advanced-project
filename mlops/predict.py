@@ -52,12 +52,24 @@ model_state = {
 }
 
 
-def load_model(model_dir: str = "models/latest"):
+def load_model(model_dir: str = "models"):
     """Load trained model and artifacts"""
-    logger.info(f"Loading model from {model_dir}...")
+    logger.info(f"Loading latest model from {model_dir}...")
     
     try:
-        model_path = Path(model_dir)
+        model_base_path = Path(model_dir)
+        
+        # Read latest model reference
+        latest_file = model_base_path / "latest.json"
+        if not latest_file.exists():
+            raise FileNotFoundError(f"Latest model reference not found: {latest_file}")
+            
+        with open(latest_file, 'r') as f:
+            latest_info = json.load(f)
+        
+        latest_version = latest_info['latest_version']
+        model_path = Path(latest_version)
+        logger.info(f"Loading model version: {latest_version}")
         
         # Load model
         model_file = model_path / "model.joblib"
