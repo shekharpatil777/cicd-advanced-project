@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cicd-app-canary
+  labels:
+    app: cicd-app
+    version: canary
 spec:
   replicas: 1
   selector:
@@ -16,6 +19,53 @@ spec:
     spec:
       containers:
       - name: cicd-app
-        image: your-dockerhub-username/cicd-app:canary
+        image: chandrashekharpatil/cicd-app:canary
         ports:
         - containerPort: 5000
+          name: http
+        env:
+        - name: MY_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: password
+        - name: ENVIRONMENT
+          value: "canary"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+# Canary Service (can be routed to via Istio/Flagger)
+apiVersion: v1
+kind: Service
+metadata:
+  name: cicd-app-canary
+  labels:
+    app: cicd-app
+    version: canary
+spec:
+  type: ClusterIP
+  selector:
+    app: cicd-app
+    version: canary
+  ports:
+  - port: 80
+    targetPort: 5000
+    protocol: TCP
+    name: http
