@@ -252,7 +252,7 @@ class MLPipeline:
         
         # Create latest reference (Windows-compatible)
         latest_info = {
-            'latest_version': str(version_dir),
+            'latest_version': version_dir.as_posix(),
             'timestamp': timestamp,
             'model_type': self.model.__class__.__name__
         }

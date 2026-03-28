@@ -1,0 +1,230 @@
+# CI/CD Advanced Project - App and MLOps Setup Steps
+# Date: March 28, 2026
+# This file documents all the steps taken to integrate MLOps capabilities into the CI/CD project
+
+## Overview
+This project evolved from a basic CI/CD system to a production-ready portfolio piece with real MLOps capabilities including:
+- Machine Learning model training pipeline
+- Model serving API with REST endpoints
+- Docker containerization with ML dependencies
+- Windows compatibility fixes
+- Production-grade error handling and logging
+
+## 1. Initial Project Structure
+- Basic Flask app in app/app.py with health, ready, and version endpoints
+- Docker setup with docker-compose.yml including PostgreSQL, Redis, Prometheus, Grafana
+- Jenkins CI/CD pipeline
+- Kubernetes deployment configurations
+
+## 2. MLOps Component Addition
+
+### Step 2.1: Created mlops/requirements.txt
+Added comprehensive ML dependencies:
+```
+scikit-learn==1.8.0
+numpy==2.4.3
+pandas==2.0.3
+joblib==1.5.3
+prometheus-client==0.24.1
+```
+
+### Step 2.2: Created mlops/train.py
+- Production ML training pipeline with MLPipeline class
+- Data loading, preprocessing, model training, evaluation, and saving
+- Support for multiple algorithms (RandomForest, GradientBoosting)
+- Model versioning with timestamped directories
+- Windows-compatible latest model reference using JSON instead of symlinks
+- Comprehensive logging and error handling
+
+### Step 2.3: Created mlops/predict.py
+- Flask API for model serving with 5 endpoints:
+  - /health: Health check
+  - /model-info: Model metadata
+  - /predict: Single prediction
+  - /batch-predict: Multiple predictions
+  - /metrics: Prometheus metrics
+- Model loading from latest.json reference
+- Input validation and error handling
+
+## 3. Windows Compatibility Fixes
+
+### Step 3.1: Fixed Symlink Privilege Error
+- Original code used os.symlink() for latest model reference
+- Windows requires administrator privileges for symlinks
+- Solution: Replaced with JSON-based latest.json file containing model path
+- Updated train.py to use version_dir.as_posix() for cross-platform paths
+
+### Step 3.2: Path Handling
+- Ensured all file paths use forward slashes for Linux container compatibility
+- Used pathlib.Path for cross-platform path operations
+
+## 4. Main App Integration
+
+### Step 4.1: Updated app/app.py
+- Added ML model loading on startup
+- Integrated ML prediction endpoints:
+  - /model-info: Returns model metadata
+  - /predict: Single sample prediction
+  - /batch-predict: Multiple sample predictions
+  - /ml-metrics: ML-specific metrics
+- Added error handling for missing models
+- Maintained backward compatibility with existing endpoints
+
+### Step 4.2: Updated app/requirements.txt
+- Added ML dependencies to main app requirements
+- Updated prometheus-client to version 0.24.1
+- Ensured all packages are compatible with Python 3.11
+
+## 5. Docker Configuration Updates
+
+### Step 5.1: Updated Dockerfile
+- Changed base image from python:3.9-slim to python:3.11-slim
+- Added COPY commands for mlops/ and models/ directories
+- Ensured ML dependencies are available in container
+
+### Step 5.2: Docker Build and Test
+- Successfully built Docker image with all ML dependencies
+- Verified model loading works in containerized environment
+- Tested Flask app startup with ML integration
+
+## 6. Testing and Validation
+
+### Step 6.1: Local Testing
+- Verified mlops/train.py runs successfully and generates models
+- Tested mlops/predict.py imports and model loading
+- Confirmed Flask app starts with ML endpoints
+
+### Step 6.2: Docker Testing
+- Built and ran Docker container
+- Verified ML model loads correctly in container
+- Tested API endpoints functionality
+
+## 7. Key Technical Decisions
+
+### Decision 7.1: JSON-based Latest Reference
+- Chose JSON over symlinks for Windows compatibility
+- Ensures cross-platform compatibility (Windows development, Linux deployment)
+- Maintains versioning information and metadata
+
+### Decision 7.2: Integrated vs Separate Services
+- Initially created separate mlops/predict.py service
+- Later integrated ML endpoints into main app/app.py
+- Simplifies deployment and reduces container complexity
+
+### Decision 7.3: Python Version Upgrade
+- Upgraded from Python 3.9 to 3.11 in Docker
+- Required for scikit-learn 1.8.0 compatibility
+- Ensures access to latest ML library features
+
+## 8. File Structure After Changes
+
+```
+cicd-advanced-project/
+├── app/
+│   ├── app.py (updated with ML endpoints)
+│   └── requirements.txt (updated with ML deps)
+├── mlops/
+│   ├── train.py (ML training pipeline)
+│   ├── predict.py (original ML serving - now integrated)
+│   └── requirements.txt (ML dependencies)
+├── models/ (created by training)
+│   ├── v1.0_20260328_152725/ (versioned model artifacts)
+│   └── latest.json (latest model reference)
+├── Dockerfile (updated for Python 3.11 and ML files)
+├── docker-compose.yml (unchanged)
+└── ... (other existing files)
+```
+
+## 9. API Endpoints Summary
+
+### Original App Endpoints
+- GET / : Hello message with environment info
+- GET /health : Health check
+- GET /ready : Readiness check
+- GET /version : Version information
+
+### New ML Endpoints
+- GET /model-info : Model metadata and features
+- POST /predict : Single prediction with input validation
+- POST /batch-predict : Multiple predictions
+- GET /ml-metrics : ML-specific metrics
+
+## 10. Model Training Results
+- Dataset: 1000 samples, 6 features (age, income, credit_score, loan_amount, employment_years)
+- Engineered features: Added income_to_loan_ratio, credit_income_ratio, age_group
+- Final model: GradientBoostingClassifier
+- Performance: 54% accuracy, 58.9% F1-score
+- Model artifacts: Saved with joblib (model, scaler, features, metadata)
+
+## 11. Deployment Considerations
+- Models are included in Docker image for simplicity
+- In production, consider external model storage (S3, MLflow)
+- Health checks verify model loading
+- Graceful degradation if model fails to load
+
+## 12. Future Enhancements
+- Model drift detection
+- Automated retraining pipelines
+- A/B testing capabilities
+- Model explainability features
+- Advanced monitoring and alerting
+
+## 13. Lessons Learned
+- Windows compatibility requires careful path handling
+- JSON-based references are more portable than symlinks
+- Integration testing is crucial for ML systems
+- Docker builds can be time-consuming with ML dependencies
+- Version pinning is essential for reproducible deployments
+
+## 14. Commands Used
+
+### Training and Testing
+```bash
+# Install ML dependencies
+pip install -r mlops/requirements.txt
+
+# Train ML model
+python mlops/train.py
+
+# Test model loading
+python -c "from mlops.predict import load_model; load_model()"
+
+# Test Flask app
+python -c "from app.app import app; print('App loads successfully')"
+```
+
+### Docker Operations
+```bash
+# Build Docker image
+docker build -t cicd-app:latest .
+
+# Run Docker container
+docker run --rm -p 5000:5000 cicd-app:latest
+
+# Run full stack
+docker-compose up -d
+```
+
+### API Testing
+```bash
+# Health check
+curl http://localhost:5000/health
+
+# Model info
+curl http://localhost:5000/model-info
+
+# Single prediction
+curl -X POST http://localhost:5000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"age": 35, "income": 50000, "credit_score": 700, "loan_amount": 200000, "employment_years": 10}'
+```
+
+## 15. Troubleshooting Notes
+- If model loading fails: Check latest.json path format (should use forward slashes)
+- If Docker build fails: Ensure Python version compatibility with ML packages
+- If predictions fail: Verify input data matches expected features
+- Windows symlink errors: Use JSON-based latest reference instead
+
+---
+End of Setup Steps Documentation</content>
+<parameter name="filePath">c:\Users\Shekh\Downloads\cicd-advanced-project\cicd-advanced-project\setup_steps.txt
