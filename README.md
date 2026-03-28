@@ -1,4 +1,17 @@
-# 🚀 Advanced CI/CD Pipeline with MLOps
+![CI](https://img.shields.io/badge/CI-Jenkins-blue)
+![CD](https://img.shields.io/badge/CD-ArgoCD-green)
+![Container](https://img.shields.io/badge/Container-Docker-blue)
+![Orchestration](https://img.shields.io/badge/Orchestration-Kubernetes-blue)
+![Cloud](https://img.shields.io/badge/Cloud-AWS-orange)
+![IaC](https://img.shields.io/badge/IaC-Terraform-purple)
+![Monitoring](https://img.shields.io/badge/Monitoring-Prometheus-red)
+![Visualization](https://img.shields.io/badge/Dashboard-Grafana-yellow)
+![MLOps](https://img.shields.io/badge/MLOps-Enabled-brightgreen)
+#🚀 Advanced CI/CD Pipeline with MLOps
+
+
+
+
 
 > **Production-Grade DevOps + ML Solution** | Enterprise Architecture | Real-World Problem Solving
 
